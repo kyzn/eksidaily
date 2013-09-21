@@ -21,6 +21,7 @@ $link_entry="https://eksisozluk.com/entry/";
 $link_topic="https://eksisozluk.com/";
 
 #Write some receivers before running.
+#Remember to escape @ with \@.
 #Sender to kindle must be approved at amazon.com
 $sender_address=""; #will be unique for kindle receivers
 $sender_replyto="";
@@ -145,39 +146,43 @@ if($datecontrolled eq "ok"){ #Send only if list is updated
 
   #Send to kindle readers.
 
-  my $msg = MIME::Lite->new(
-    From    => "$sender_address",
-    To      => "$receivers_kindle",
-    'Reply-to' => "$sender_replyto",
-    Subject => "$filedate",
-    Type    => 'multipart/mixed',
-  );
+my $msg = MIME::Lite->new(
+     From    => "$sender_address",
+     To      => "$receivers_kindle",
+     'Reply-to' => "$sender_replyto",
+     Subject => "$filedate",
+     Type    => 'multipart/mixed',
+ );
 
-  $msg->attach(
-    Type     => 'application/html',
-    Path     => "$file_out_html",
-    Filename => "$filedate".".html",
-    Disposition => 'attachment'
-  );
+ $msg->attach(
+     Type     => 'application/html',
+     Path     => "$file_out_html",
+     Filename => "$filedate".".html",
+     Disposition => 'attachment'
 
-  $msg->send or die;
+ );
 
-  #Send to email readers.
+ $msg->send or die;
 
-  my $msg = MIME::Lite->new(
+
+
+#Send the created html file to email readers.
+
+my $msg = MIME::Lite->new(
     From    => "$sender_address",
     Bcc      => "$receivers_mail",
     Subject => "$filedate",
     Type    => 'multipart/mixed',
-  );
+);
 
-  $msg->attach(
-    Type     => 'application/html',
+$msg->attach(
+    Type     => "application/html",
     Path     => "$file_out_html",
     Filename => "$filedate".".html",
-  );
 
-  $msg->send or die;
+);
+
+$msg->send or die;
   print "delivered.\n\n" #log
 
 }else{
