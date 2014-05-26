@@ -162,7 +162,7 @@ open OUT, ">$file_out_html" or die; print OUT $out; close OUT;
 print "merged,\n";#LOG
 
 
-if($datecontrolled eq "ok"){ #this makes sure not to send the day before's top list.
+if($datecontrolled eq "ok"){ #this makes sure not to send the day before's top list.
 
   #Send to kindle readers.
 
