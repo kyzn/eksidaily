@@ -25,13 +25,11 @@ my %Address = (
 	reply_to	  => 'a@a.a',
 
 	#Email recipients. All and dev can be different sets.
-	to_email_all => 'a@a.a,
-					 b@a.a',
+	to_email_all => 'a@a.a,a@a.a',
 	to_email_dev => 'a@a.a',
 
 	#Kindle recipients. All and dev can be different sets.
-	to_kindle_all=> 'a@a.a,
-					 b@a.a',
+	to_kindle_all=> 'a@a.a,a@a.a',
 	to_kindle_dev=> 'a@a.a',
 
     			   );
