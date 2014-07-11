@@ -6,59 +6,18 @@ inc/
 Build
 !Build/
 Build.bat
-.last_cover_stats
 /Makefile
 /Makefile.old
-/MANIFEST.bak
-/META.yml
-/META.json
-/MYMETA.*
-nytprof.out
-/pm_to_blib
 *.o
 *.bs
-
-
-# Directories #
-/build/
-/bin/
-target/
- 
-# OS Files #
-.DS_Store
- 
-*.class
- 
-# Package Files #
-*.jar
-*.war
-*.ear
 *.db
- 
-######################
-# Windows
-######################
- 
-# Windows image file caches
 Thumbs.db 
- 
-# Folder config file
 Desktop.ini
- 
-######################
-# OSX
-######################
- 
 .DS_Store
 .svn
- 
-# Thumbnails
 ._*
- 
-# Files that might appear on external disk
 .Spotlight-V100
 .Trashes
- 
  
 ######################
 # Eclipse
@@ -79,6 +38,7 @@ local.properties
 .settings/
 .loadpath
 /src/main/resources/rebel.xml
+
 # External tool builders
 .externalToolBuilders/
  
@@ -90,3 +50,25 @@ local.properties
  
 # PDT-specific
 .buildpath
+
+
+######################
+# Project specific
+######################
+
+archive/
+
+*.html
+*.css
+*.sql
+
+test.pl
+get.pl
+address.pm
+
+TODO
+kindlegen
+log
+inlist
+.entry*
+.temptopic
