@@ -37,7 +37,6 @@ my $todaydate  = DateTime->now->dmy;
 #You should provide your working folder.
 #You can specify a different path for dev mode.
 my $folder_temp="/home/kyzn/eksi/";
-$folder_temp="/Users/kyzn/git/eksidebe/";
 #if ($dev){ $folder_temp="/home/kyzn/eksi/"; }
 
 #You can change these files, as they're called by their variable names.
@@ -69,7 +68,7 @@ if($dev){
 }
 #If there is no recipient, then die.
 if($to_email eq ""){
-  die "No email recipient found!";
+  die "No email recipient found";
 }
 
 # #Kindle sending is disabled temporarily.
@@ -82,7 +81,7 @@ if($to_email eq ""){
 
 # #If there is no recipient, then die.
 # if($to_kindle eq ""){
-#   die "No kindle recipient found!";
+#   die "No kindle recipient found";
 # }
 
 
@@ -100,7 +99,7 @@ close FILE or die;
 
 #Skip partial lists on the debe page.
 my $pointer=0;
-while($pointer < @lines && $lines[$pointer]!~/"topic-list"/){
+while($pointer < @lines && $lines[$pointer]!~/"topic-list/){
   $pointer++;
 }
 if($dev){ print "Pointer at line $pointer.\n";}
@@ -148,10 +147,10 @@ for(my $i=1 ; $i<51 && $pointer<@lines ; $pointer++){
 #If did not get entry ids, then die.
 for(my $i=50;$i>0;$i--){
   if(!defined($entries_id[$i])){
-    die "Entry $i has no id.";
+    die "Entry $i has no id";
   }
   if(!defined($entries_topic[$i])){
-    die "Entry $i nas no topic.";
+    die "Entry $i nas no topic";
   }
 }
 
@@ -230,7 +229,7 @@ for(my $i=50;$i>0;$i--){
       #Control the date. If the entry is not of the today or yesterday, die immediately.
       my $datecontrol=$1."-".$2."-".$3; 
       if($datecontrol ne $filedate && $datecontrol ne $todaydate){
-        die "Date control failed.\n".
+        die "Date control failed\n".
         "Entry has $datecontrol.\n".
         "Checked for $filedate and $todaydate with no match.\n".
         "Debe list might not be updated yet.";
@@ -256,7 +255,7 @@ for(my $i=50;$i>0;$i--){
   #If entry has no date up to this point, die immediately.
   #This used to be called "entries_exist", and has been changed.
   if ($entries_datepublished[$i] eq ""){ 
-    die "Entry $i does not have a date." 
+    die "Entry $i does not have a date" 
     #This leaves downloaded file with no move to /tmp, so you can go check what is going on.
   }
   
