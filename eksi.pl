@@ -37,6 +37,7 @@ my $todaydate  = DateTime->now->dmy;
 #You should provide your working folder.
 #You can specify a different path for dev mode.
 my $folder_temp="/home/kyzn/eksi/";
+#$folder_temp="/Users/kyzn/git/eksidebe/"; #local dev.
 #if ($dev){ $folder_temp="/home/kyzn/eksi/"; }
 
 #You can change these files, as they're called by their variable names.
@@ -131,17 +132,29 @@ my @entries_ref_ref_topic;
 
 #Fill the entries_id and entries_topic from the list.
 #ith entry of array will show ith entry of debe.
-for(my $i=1 ; $i<51 && $pointer<@lines ; $pointer++){
+my $i=1;
+while($pointer<@lines){
   if($lines[$pointer]=~/<span class="caption">(.*)<\/span>/){
     $entries_topic[$i]=$1;
     $entries_topic[$i]=decode_entities($entries_topic[$i]);
+    
     if($lines[$pointer-1]=~/%23(\d+)">/){
-          $entries_id[$i]=$1;
+      $entries_id[$i]=$1;
     }else{
-      print "ERROR: Couldn't get entry id from the debe list for i=$i.\n"
+      die "Couldn't get id at line $pointer";
     }
+
     $i++;
   }
+  $pointer++;
+}
+
+
+#Fixes the problem of getting 60 entries instead of 50
+#caused by the partial list.
+while(@entries_id>51){
+  splice @entries_id,1,1;
+  splice @entries_topic,1,1;
 }
 
 #If did not get entry ids, then die.
@@ -204,8 +217,8 @@ for(my $i=50;$i>0;$i--){
     #Get the link of the topic.
     if($lines[$j]=~/<a href="\/(.*)" itemprop="url">.*<\/a>[^<]/){$entries_topic4link[$i]=$1;} 
     
-    #This is deprecated.
-    #$lines[$j]=~s/<sup class=\"ab\"><([^<]*)(data-query=\")([^>]*)\">\*<\/a><\/sup>/<$1$2$3\">\(* $3\)<\/a>/g;
+    #This is to open up hidden references (akıllı bkz, yıldız)
+    $lines[$j]=~s/<sup class=\"ab\"><([^<]*)(data-query=\")([^>]*)\">\*<\/a><\/sup>/<$1$2$3\">\(* $3\)<\/a>/g;
     
     #Fix links for eksisozluk.com so that they can work when you're outside eksisozluk.com as well.
     #Also open links in new tabs (_blank).
@@ -215,10 +228,11 @@ for(my $i=50;$i>0;$i--){
     $lines[$j]=~s/href="/style="text-decoration:none;" href="/g;
     
     #Add img src to display images that are of jpg jpeg png gif formats.
-    $lines[$j]=~s/(href="([^"]*\.(jpe?g|png|gif))"[^<]*<\/a>)/$1<br><br><img src="$2"><br><br>/g;
+    $lines[$j]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2"><br><br>/g;
     
-    #Add a northwest arrow for outer links.
-    $lines[$j]=~s/(href="https?:\/\/(?!eksisozluk.com)([^<]*)<\/a>)/$1 &#8599;/g;
+    #Add a northwest arrow, and domain name in parantheses.
+    $lines[$j]=~s/(https?:\/\/(?!eksisozluk.com)([^\/<]*\.[^\/<]*)[^<]*<\/a>)/$1 \($2 &#8599;\)/g;
+
 
     #Get entries_numberintopic.
     if($lines[$j]=~/<li id=".*" value="(\d+)"/){$entries_numberintopic[$i]=$1;}
@@ -303,8 +317,8 @@ for(my $i=50;$i>0;$i--){
         if($entries_ref_id[$i]!=$entries_id[$i]){
           for(my $j3=$j2;$j3<$j2+10;$j3++){
 
-            #This is deprecated.
-            #$lines2[$j3]=~s/<sup class=\"ab\"><([^<]*)(data-query=\")([^>]*)\">\*<\/a><\/sup>/<$1$2$3\">\(* $3\)<\/a>/g;
+            #This is to open up hidden references (akıllı bkz, yıldız)
+            $lines2[$j3]=~s/<sup class=\"ab\"><([^<]*)(data-query=\")([^>]*)\">\*<\/a><\/sup>/<$1$2$3\">\(* $3\)<\/a>/g;
             
             #Fix links for eksisozluk.com so that they can work when you're outside eksisozluk.com as well.
             #Also open links in new tabs (_blank).
@@ -314,11 +328,13 @@ for(my $i=50;$i>0;$i--){
             $lines2[$j3]=~s/href="/style="text-decoration:none;" href="/g;
         
             #Add img src to display images that are of jpg jpeg png gif formats.
-            $lines2[$j3]=~s/(href="([^"]*\.(jpe?g|png|gif))"[^<]*<\/a>)/$1<br><br><img src="$2"><br><br>/g;
+            $lines2[$j3]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2"><br><br>/g;
     
             #Add a northwest arrow for outer links.
-            $lines2[$j3]=~s/(href="https?:\/\/(?!eksisozluk.com)([^<]*)<\/a>)/$1 &#8599;/g;
+            #$lines2[$j3]=~s/(href="https?:\/\/(?!eksisozluk.com)([^<]*)<\/a>)/$1 &#8599;/g;
         
+            #Add a northwest arrow, and domain name in parantheses.
+            $lines2[$j3]=~s/(https?:\/\/(?!eksisozluk.com)([^\/<]*\.[^\/<]*)[^<]*<\/a>)/$1 \($2 &#8599;\)/g;
 
             #Get entries_ref_datepublished.
             if($lines2[$j3]=~/"commentTime">(\d\d)\.(\d\d)\.(\d\d\d\d)(\s\d\d\:\d\d)/){
