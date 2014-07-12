@@ -8,6 +8,8 @@
 #You can edit all a@a.a addresses accordingly. 
 #Just make sure to RENAME the file to address.pm and you'll be ok.
 
+#Make sure to put address.pm to your @INC.
+
 package address;
 require Exporter;
 use strict;
