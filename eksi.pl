@@ -3,11 +3,9 @@
 #   TODO
 #   1: Download images, convert to base64, embed them to html and .mobi files.
 #   2: Create .mobi files by using kindlegen and/or calibre's ebook-convert.
-#   3: Check if entry is deleted. if($numberintopic==""){$numberintopic="?";$datetoprint="?";$body="<i>bu entry silinmis.</i>";}
-#   4: Check entries are actually there.. Don't send empty mails.
-#   5: Read mail addresses from a database, not a file.
-#   6: Replace wget by LWP::UserAgent;
-#   7: Embed tweets
+#   3: Read mail addresses from a database, not a file.
+#   4: Replace wget by LWP::UserAgent, and check shorthened URLs
+#   5: Embed tweets
 
 use DateTime; 
 use MIME::Lite;
@@ -23,7 +21,7 @@ use Modern::Perl;
 my $dev=0;
 foreach(@ARGV){
   if(lc($_) eq ("d")){$dev=1;}
-  print "##RUNS IN DEV MODE##\n\n";
+  print "d ";
 }
 
 
@@ -49,9 +47,9 @@ my $file_log="$folder_temp"."log";
 my $link_stats="https://eksisozluk.com/istatistik/dunun-en-begenilen-entryleri";
 my $link_entry="https://eksisozluk.com/entry/";
 my $link_topic="https://eksisozluk.com/";
-my $searchstring = "\\?a=search\\&searchform.when.from=$searchdate";
+my $searchstring = "?a=search&searchform.when.from=$searchdate";
 
-#Wget will be replaced very soon. TODO:6
+#Wget will be replaced very soon.
 my $wget="wget --no-check-certificate -q -O";
 
 #This is the addresses to be included. Emails are stored in this file.
@@ -72,8 +70,8 @@ if($to_email eq ""){
   die "No email recipient found";
 }
 
-# #Kindle sending is disabled temporarily.
-# my $to_kindle;
+# #Kindle sending is disabled temporarily.
+# my $to_kindle;
 # if($dev){ 
 #   $to_kindle= $adr{to_kindle_dev};
 # }else{
@@ -103,7 +101,7 @@ my $pointer=0;
 while($pointer < @lines && $lines[$pointer]!~/"topic-list/){
   $pointer++;
 }
-if($dev){ print "Pointer at line $pointer.\n";}
+#if($dev){ print "Pointer at line $pointer.\n";}
 
 #Declare arrays where entry details to be stored.
 my @entries_topic;
@@ -115,6 +113,7 @@ my @entries_datemodified;
 my @entries_numberintopic;
 my @entries_author;
 my @entries_body;
+my @entries_favcount;
 
 #Details of reference entry.
 #A reference entry is the first entry of the topic that is written
@@ -128,6 +127,7 @@ my @entries_ref_numberintopic;
 my @entries_ref_author;
 my @entries_ref_body;
 my @entries_ref_ref_topic;
+my @entries_ref_favcount;
 
 
 #Fill the entries_id and entries_topic from the list.
@@ -149,22 +149,42 @@ while($pointer<@lines){
   $pointer++;
 }
 
-
 #Fixes the problem of getting 60 entries instead of 50
 #caused by the partial list.
+
 while(@entries_id>51){
   splice @entries_id,1,1;
   splice @entries_topic,1,1;
+  $i--;
 }
 
+#It's now possible to get less than 50 entries in debe. Check for that
+my $debe_count = $i-1;
+my $eid_count  = scalar(@entries_id) -1;
+my $etp_count  = scalar(@entries_topic) -1;
+
+#Make sure @entries_id and @entries_topic has the same number of elements with debe_count.
+if($eid_count!=$debe_count){
+  die "There are $eid_count ids for $debe_count entries";
+}
+if($etp_count!=$debe_count){
+  die "There are $etp_count topics for $debe_count entries";
+}
+
+
 #If did not get entry ids, then die.
-for(my $i=50;$i>0;$i--){
+for(my $i=$debe_count;$i>0;$i--){
   if(!defined($entries_id[$i])){
     die "Entry $i has no id";
   }
   if(!defined($entries_topic[$i])){
     die "Entry $i nas no topic";
   }
+}
+
+#If half of the entries are missing, assuming there's a problem.
+if($debe_count<26){
+  die "Only $debe_count entries found";
 }
 
 #Start creating the html file.
@@ -185,7 +205,11 @@ p.bigref {
   margin-left: 0.5cm;
   margin-right: 0.5cm;
 }
-img{width:90%;overflow:hidden;}
+img{
+  width:90%;
+  max-width:200px;
+  overflow:hidden;
+}
 body{    
   font: 9pt Verdana, sans-serif;
     background-color: #cccccc;
@@ -205,14 +229,46 @@ a:hover {
 <br><hr>\n\n\n";
 
 #Get 50 entries, and their references if exists.
-for(my $i=50;$i>0;$i--){
+for(my $i=$debe_count;$i>0;$i--){
+
+  my $entrydeleted=0;
 
   system("$wget ${folder_temp}.entry$i $link_entry$entries_id[$i]");
   open FILE, "${folder_temp}.entry$i" or die;
   my @lines = <FILE>;
   close FILE or die;
+ 
+# # This part redownloads a file until the file comes with more than 0 lines.
+# # But a deleted entry can also be empty.. So that's a risk to uncomment this.  
+#  while(scalar(@lines==0)){
+#    print "File of entry $i is empty. Sleeping for 15 secs.\n";
+#    sleep(15);
+#    print "Woke up. Trying a redownload.\n";
+#    system("$wget ${folder_temp}.entry$i $link_entry$entries_id[$i]");
+#    open FILE, "${folder_temp}.entry$i" or die;
+#    my @lines = <FILE>;
+#    close FILE or die;
+#  }
 
-  for(my $j=0;$j<@lines;$j++){
+  #Show a specific message for deleted entries accordingly.
+  if (scalar(@lines)==0){ 
+    $entries_datepublished[$i]="?";
+    $entries_datetoprint[$i]="?";
+    $entries_datemodified[$i]="";
+    $entries_numberintopic[$i]="?";
+    $entries_author[$i]="?";
+    $entries_favcount[$i]="?";
+    $entries_body[$i]="<i>bu entry silinmi&#351;.</i>";
+    $entrydeleted=1;
+  }
+
+  for(my $j=0;$j<@lines && !$entrydeleted;$j++){
+
+    #goo.gl opener
+    while($lines[$j]=~/href="(http:\/\/goo.gl[^"]*)"/){
+      my $temp=&longgoogl($1);
+      $lines[$j]=~s/href="(http:\/\/goo.gl[^"]*)"/href="$temp"/;
+    }
 
     #Get the link of the topic.
     if($lines[$j]=~/<a href="\/(.*)" itemprop="url">.*<\/a>[^<]/){$entries_topic4link[$i]=$1;} 
@@ -228,7 +284,8 @@ for(my $i=50;$i>0;$i--){
     $lines[$j]=~s/href="/style="text-decoration:none;" href="/g;
     
     #Add img src to display images that are of jpg jpeg png gif formats.
-    $lines[$j]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2"><br><br>/g;
+    #Max-width added once more so that gmail recognizes it too.
+    $lines[$j]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2" style="max-width:200px;"><br><br>/g;
     
     #Add a northwest arrow, and domain name in parantheses.
     $lines[$j]=~s/(https?:\/\/(?!eksisozluk.com)([^\/<]*\.[^\/<]*)[^<]*<\/a>)/$1 \($2 &#8599;\)/g;
@@ -258,6 +315,9 @@ for(my $i=50;$i>0;$i--){
 
     #Get entries_body.
     if($lines[$j]=~/commentText">(.*)<\/div>/){$entries_body[$i]=$1;}
+
+    #Get entries_favcount.
+    if($lines[$j]=~/data-favorite-count="(\d+)"/){$entries_favcount[$i]=$1;}
   }
 
   #Set date to print, aka entries_datetoprint.
@@ -278,30 +338,44 @@ for(my $i=50;$i>0;$i--){
   print "$i ";
   
   # #Display more details if dev.
-  # if($dev){
-  #   print "\n\n";
-  #   print "entries_topic:\n$entries_topic[$i]\n\n";
-  #   print "topic4link:\n$entries_topic4link[$i]\n\n";
-  #   print "numberintopic:\n$entries_numberintopic[$i]\n\n";
-  #   print "datepublished:\n$entries_datepublished[$i]\n\n";
-  #   print "datemodified:\n$entries_datemodified[$i]\n\n";
-  #   print "author:\n$entries_author[$i]\n\n";
-  #   print "body:\n$entries_body[$i]\n\n";
-  # }
+   # if($dev){
+   #   print "\n\n";
+   #   print "entries_topic:\n$entries_topic[$i]\n\n";
+   #   print "topic4link:\n$entries_topic4link[$i]\n\n";
+   #   print "numberintopic:\n$entries_numberintopic[$i]\n\n";
+   #   print "datepublished:\n$entries_datepublished[$i]\n\n";
+   #   print "datemodified:\n$entries_datemodified[$i]\n\n";
+   #   print "datetoprint:\n$entries_datetoprint[$i]\n\n";
+   #   print "author:\n$entries_author[$i]\n\n";
+   #   print "body:\n$entries_body[$i]\n\n";
+   #   print "fav:\n$entries_favcount[$i]\n\n";
+   # }
 
   
   #Add entry to html.
-  $out.=  "<h3>$i. <a href=\"$link_topic$entries_topic4link[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_topic[$i]</a></h3><p class=\"big\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]"
-  ."</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$entries_author[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_id[$i]\" "
-  ."target=\"blank\" style=\"text-decoration:none; color:black\">$entries_datetoprint[$i]</a>)</div></h5>\n\n";  
+  if(!$entrydeleted){
+    $out.=  "
+    <h3>$i. <a href=\"$link_topic$entries_topic4link[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">
+    $entries_topic[$i]</a></h3><p class=\"big\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
+    </p><h5><div align=\"right\">
+    (<a href=\"https://eksisozluk.com/biri/$entries_author[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_id[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_datetoprint[$i], $entries_favcount[$i]&#9734;</a>)</div></h5>\n\n
+    ";
 
+  }else{
+    $out.=  "
+    <h3>$i. <a href=\"$link_topic$entries_topic4link[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">
+    $entries_topic[$i]</a></h3><p class=\"big\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
+    </p><h5><div align=\"right\">
+    (?, ?, ?&#9734;)</div></h5>\n\n
+    ";
+  }
 
 
   #Search for a reference entry in a similar way.
   #If the entry is the first entry of the topic, no need to search.
-  if($entries_numberintopic[$i]!=1){ 
+  if(!$entrydeleted && $entries_numberintopic[$i]!=1){ 
     #Make a search for the topic for the specific date.
-    system("$wget $folder_temp.temptopic $link_topic$entries_topic4link[$i]$searchstring");
+    system("$wget $folder_temp.temptopic \"$link_topic$entries_topic4link[$i]$searchstring\"");
     open FILE2, "$folder_temp.temptopic" or die;
     my @lines2 = <FILE2>;close FILE2 or die;
     
@@ -316,6 +390,12 @@ for(my $i=50;$i>0;$i--){
         #If debe entry IS the first entry of the day, do NOT proceed.
         if($entries_ref_id[$i]!=$entries_id[$i]){
           for(my $j3=$j2;$j3<$j2+10;$j3++){
+           
+            #goo.gl opener
+            while($lines2[$j3]=~/href="(http:\/\/goo.gl[^"]*)"/){
+              my $temp=&longgoogl($1);
+              $lines2[$j3]=~s/href="(http:\/\/goo.gl[^"]*)"/href="$temp"/;
+            }
 
             #This is to open up hidden references (akıllı bkz, yıldız)
             $lines2[$j3]=~s/<sup class=\"ab\"><([^<]*)(data-query=\")([^>]*)\">\*<\/a><\/sup>/<$1$2$3\">\(* $3\)<\/a>/g;
@@ -328,10 +408,8 @@ for(my $i=50;$i>0;$i--){
             $lines2[$j3]=~s/href="/style="text-decoration:none;" href="/g;
         
             #Add img src to display images that are of jpg jpeg png gif formats.
-            $lines2[$j3]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2"><br><br>/g;
-    
-            #Add a northwest arrow for outer links.
-            #$lines2[$j3]=~s/(href="https?:\/\/(?!eksisozluk.com)([^<]*)<\/a>)/$1 &#8599;/g;
+            #Max-width added once more so that gmail recognizes it too.
+            $lines2[$j3]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2" style="max-width:200px;"><br><br>/g;
         
             #Add a northwest arrow, and domain name in parantheses.
             $lines2[$j3]=~s/(https?:\/\/(?!eksisozluk.com)([^\/<]*\.[^\/<]*)[^<]*<\/a>)/$1 \($2 &#8599;\)/g;
@@ -349,7 +427,10 @@ for(my $i=50;$i>0;$i--){
             if($lines2[$j3]=~/data-author="(.*)" data-flags/){$entries_ref_author[$i]=$1;}
             
             #Get entries_ref_body.
-            if($lines2[$j3]=~/commentText">(.*)<\/div>/){$entries_ref_body[$i]=$1;}  
+            if($lines2[$j3]=~/commentText">(.*)<\/div>/){$entries_ref_body[$i]=$1;}
+
+            #Get entries_favcount.
+            if($lines2[$j3]=~/data-favorite-count="(\d+)"/){$entries_ref_favcount[$i]=$1;}  
           }
 
           #Set date to print, aka entries_ref_datetoprint.
@@ -364,7 +445,7 @@ for(my $i=50;$i>0;$i--){
           #Add entry to html.
           $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$entries_ref_numberintopic[$i]. </b> $entries_ref_body[$i]</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$entries_ref_author[$i]\" "
           ."target=\"blank\" style=\"text-decoration:none; color:black\">$entries_ref_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_ref_id[$i]\" target=\"blank\" style=\"text-decoration:none; "
-          ."color:black\">$entries_ref_datetoprint[$i]</a>)</div></h5>\n\n";  
+          ."color:black\">$entries_ref_datetoprint[$i], $entries_ref_favcount[$i]&#9734;</a>)</div></h5>\n\n";  
 
         }
       }
@@ -428,3 +509,12 @@ close LOG;
 #Move the html file to archive.
 system("mv -f $file_out_html ${folder_temp}archive/$filedate");
 print "\n";
+
+sub longgoogl{
+  my $googl = $_[0];
+  my $long = `curl -s $1 |grep HREF`;
+  if($long =~/"(http[^"]*)"/){
+    $long = $1;
+  }
+  return $long;
+}
