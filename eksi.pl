@@ -207,7 +207,7 @@ p.bigref {
 }
 img{
   width:90%;
-  max-width:200px;
+  max-width:250px;
   overflow:hidden;
 }
 body{    
@@ -283,9 +283,12 @@ for(my $i=$debe_count;$i>0;$i--){
     #Without this fix you'll see underlines in gmail delivery, which is not intended.
     $lines[$j]=~s/href="/style="text-decoration:none;" href="/g;
     
+    #Convert imgur.com/abcdefg to imgur.com/abcdefg.jpg
+    $lines[$j]=~s/(href="https?:\/\/[^.]*\.?imgur.com\/\w{7})"/$1\.jpg"/g;
+
     #Add img src to display images that are of jpg jpeg png gif formats.
     #Max-width added once more so that gmail recognizes it too.
-    $lines[$j]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2" style="max-width:200px;"><br><br>/g;
+    $lines[$j]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2" style="max-width:250px;"><br><br>/g;
     
     #Add a northwest arrow, and domain name in parantheses.
     $lines[$j]=~s/(https?:\/\/(?!eksisozluk.com)([^\/<]*\.[^\/<]*)[^<]*<\/a>)/$1 \($2 &#8599;\)/g;
@@ -351,6 +354,10 @@ for(my $i=$debe_count;$i>0;$i--){
    #   print "fav:\n$entries_favcount[$i]\n\n";
    # }
 
+   my $favchar = "&#9734;";
+   #Different fav-star for ssg. Surprise.
+   if ($entries_author[$i] eq "ssg"){ $favchar = "&#10017;";}
+
   
   #Add entry to html.
   if(!$entrydeleted){
@@ -358,7 +365,7 @@ for(my $i=$debe_count;$i>0;$i--){
     <h3>$i. <a href=\"$link_topic$entries_topic4link[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">
     $entries_topic[$i]</a></h3><p class=\"big\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
     </p><h5><div align=\"right\">
-    (<a href=\"https://eksisozluk.com/biri/$entries_author[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_id[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_datetoprint[$i], $entries_favcount[$i]&#9734;</a>)</div></h5>\n\n
+    (<a href=\"https://eksisozluk.com/biri/$entries_author[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_id[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_datetoprint[$i], $entries_favcount[$i]$favchar</a>)</div></h5>\n\n
     ";
 
   }else{
@@ -366,7 +373,7 @@ for(my $i=$debe_count;$i>0;$i--){
     <h3>$i. <a href=\"$link_topic$entries_topic4link[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">
     $entries_topic[$i]</a></h3><p class=\"big\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
     </p><h5><div align=\"right\">
-    (?, ?, ?&#9734;)</div></h5>\n\n
+    (?, ?, ?$favchar)</div></h5>\n\n
     ";
   }
 
@@ -407,9 +414,12 @@ for(my $i=$debe_count;$i>0;$i--){
             #Without this fix you'll see underlines in gmail delivery, which is not intended.
             $lines2[$j3]=~s/href="/style="text-decoration:none;" href="/g;
         
+            #Convert imgur.com/abcdefg to imgur.com/abcdefg.jpg
+            $lines2[$j3]=~s/(href="https?:\/\/[^.]*\.?imgur.com\/\w{7})"/$1\.jpg"/g;
+
             #Add img src to display images that are of jpg jpeg png gif formats.
             #Max-width added once more so that gmail recognizes it too.
-            $lines2[$j3]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2" style="max-width:200px;"><br><br>/g;
+            $lines2[$j3]=~s/(href="([^"]*\.(jpe?g|png|gif)(:large)?)"[^<]*<\/a>)/$1<br><br><img src="$2" style="max-width:250px;"><br><br>/g;
         
             #Add a northwest arrow, and domain name in parantheses.
             $lines2[$j3]=~s/(https?:\/\/(?!eksisozluk.com)([^\/<]*\.[^\/<]*)[^<]*<\/a>)/$1 \($2 &#8599;\)/g;
@@ -442,10 +452,15 @@ for(my $i=$debe_count;$i>0;$i--){
           #Log the ref_entry id.
           $log.= "\trid:$entries_ref_id[$i]"; 
 
+          
+          my $favchar = "&#9734;";
+          #Different fav-star for ssg. Surprise.
+          if ($entries_ref_author[$i] eq "ssg"){ $favchar = "&#10017;";}
+          
           #Add entry to html.
           $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$entries_ref_numberintopic[$i]. </b> $entries_ref_body[$i]</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$entries_ref_author[$i]\" "
           ."target=\"blank\" style=\"text-decoration:none; color:black\">$entries_ref_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_ref_id[$i]\" target=\"blank\" style=\"text-decoration:none; "
-          ."color:black\">$entries_ref_datetoprint[$i], $entries_ref_favcount[$i]&#9734;</a>)</div></h5>\n\n";  
+          ."color:black\">$entries_ref_datetoprint[$i], $entries_ref_favcount[$i]$favchar</a>)</div></h5>\n\n";  
 
         }
       }
