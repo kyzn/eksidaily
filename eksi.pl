@@ -354,16 +354,22 @@ for(my $i=$debe_count;$i>0;$i--){
    #   print "fav:\n$entries_favcount[$i]\n\n";
    # }
 
-   my $favchar = "&#9734;";
    #Different fav-star for ssg. Surprise.
+   my $favchar = "&#9734;";
    if ($entries_author[$i] eq "ssg"){ $favchar = "&#10017;";}
 
-  
+   #Shorten very long entries. This is to get rid of "Message clipped. Click to view entire message" thing in gmail.
+   #Is not working properly since it may cut before a >. There will be related regexp.
+   #if (length($entries_body[$i])>2050){
+   #  $entries_body[$i] = substr $entries_body[$i],0,2000;
+   #  $entries_body[$i].= "<a href=\"https://eksisozluk.com/entry/$entries_id[$i]\" target=\"blank\" style=\"text-decoration:none;\">  <i>devam&#305;</i></a>";
+   #}
+
   #Add entry to html.
   if(!$entrydeleted){
     $out.=  "
     <h3>$i. <a href=\"$link_topic$entries_topic4link[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entries_topic[$i]</a></h3><p class=\"big\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
+    $entries_topic[$i]</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
     </p><h5><div align=\"right\">
     (<a href=\"https://eksisozluk.com/biri/$entries_author[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_id[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">$entries_datetoprint[$i], $entries_favcount[$i]$favchar</a>)</div></h5>\n\n
     ";
@@ -371,7 +377,7 @@ for(my $i=$debe_count;$i>0;$i--){
   }else{
     $out.=  "
     <h3>$i. <a href=\"$link_topic$entries_topic4link[$i]\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entries_topic[$i]</a></h3><p class=\"big\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
+    $entries_topic[$i]</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entries_numberintopic[$i]. </b> $entries_body[$i]
     </p><h5><div align=\"right\">
     (?, ?, ?$favchar)</div></h5>\n\n
     ";
@@ -452,13 +458,19 @@ for(my $i=$debe_count;$i>0;$i--){
           #Log the ref_entry id.
           $log.= "\trid:$entries_ref_id[$i]"; 
 
-          
-          my $favchar = "&#9734;";
           #Different fav-star for ssg. Surprise.
+          my $favchar = "&#9734;";
           if ($entries_ref_author[$i] eq "ssg"){ $favchar = "&#10017;";}
           
+          #Shorten very long entries. This is to get rid of "Message clipped. Click to view entire message" thing in gmail.
+          #Is not working properly since it may cut before a >. There will be related regexp.
+          #if (length($entries_ref_body[$i])>2020){
+          #  $entries_ref_body[$i] = substr $entries_ref_body[$i],0,2000;
+          #  $entries_ref_body[$i].= "<a href=\"https://eksisozluk.com/entry/$entries_ref_id[$i]\" target=\"blank\" style=\"text-decoration:none;\">  <i>devam&#305;</i></a>";
+          #}
+
           #Add entry to html.
-          $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$entries_ref_numberintopic[$i]. </b> $entries_ref_body[$i]</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$entries_ref_author[$i]\" "
+          $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$entries_ref_numberintopic[$i]. </b> $entries_ref_body[$i]</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$entries_ref_author[$i]\" "
           ."target=\"blank\" style=\"text-decoration:none; color:black\">$entries_ref_author[$i]</a>, <a href=\"https://eksisozluk.com/entry/$entries_ref_id[$i]\" target=\"blank\" style=\"text-decoration:none; "
           ."color:black\">$entries_ref_datetoprint[$i], $entries_ref_favcount[$i]$favchar</a>)</div></h5>\n\n";  
 
