@@ -121,8 +121,7 @@ a:hover {
 for(my $i=scalar(@debe);$i>0;$i--){
 
   my %entry = $eksi->entry($debe[$i-1]);
-  print "$i $entry{'id'} $entry{'id_ref'}\n";
-  $log.="$i $entry{'id'} $entry{'id_ref'}\n";
+  $log.="$i $entry{'id'} $entry{'id_ref'}";
   #Show a specific message for deleted entries accordingly.
   if ($entry{'is_found'}==0){ 
     $entry{'date_print'}="?";
