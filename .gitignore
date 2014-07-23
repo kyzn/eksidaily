@@ -60,7 +60,7 @@ archive/
 
 *.html
 *.css
-*.sql
+#*.sql
 
 test.pl
 get.pl
