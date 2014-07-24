@@ -40,7 +40,7 @@ my $folder_temp="/home/kyzn/eksi/";
 
 #You can change these files, as they're called by their variable names.
 my $file_out_html="$folder_temp"."out.html";
-my $file_out_eksidebe_current="/var/www/eksidebe/current.html";
+my $file_out_eksidebe_current="/home/kyzn/eksi/current.html";
 #$file_out_eksidebe_current="/Users/kyzn/Desktop/current.html"; #local dev
 
 my $file_log="$folder_temp"."log";
