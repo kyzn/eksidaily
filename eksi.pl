@@ -160,10 +160,10 @@ for(my $i=scalar(@debe);$i>0;$i--){
     ";
 
     $out_to_eksidebecom.=  "
-    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
+    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\">
+    $entry{'topic'}</a></h3><p class=\"big\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
     </p><h5><div align=\"right\">
-    (<a href=\"https://eksisozluk.com/biri/$entry{'author'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
+    (<a href=\"https://eksisozluk.com/biri/$entry{'author'}\" target=\"blank\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
     ";
 
   }else{
@@ -175,8 +175,8 @@ for(my $i=scalar(@debe);$i>0;$i--){
     ";
 
     $out_to_eksidebecom.=  "
-    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
+    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\">
+    $entry{'topic'}</a></h3><p class=\"big\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
     </p><h5><div align=\"right\">
     (?, ?, ?$favchar)</div></h5>\n\n
     ";
@@ -192,14 +192,13 @@ for(my $i=scalar(@debe);$i>0;$i--){
     $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$ref_entry{'author'}\" "
     ."target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; "
     ."color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n";  
-    $out_to_eksidebecom.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$ref_entry{'author'}\" "
-    ."target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; "
-    ."color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
+    $out_to_eksidebecom.=  "<br><h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$ref_entry{'author'}\" "
+    ."target=\"blank\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
 
   }
 
   $out.="<hr>\n\n";
-  $out_to_eksidebecom.="<hr>\n\n";
+  $out_to_eksidebecom.="<br><br><hr>\n\n";
   $log.="\n";
 }
 
