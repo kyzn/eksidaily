@@ -1,8 +1,3 @@
---This sql file creates the database to be used to store
---entries, authors, topics, debes and refs.
---Exists since eksidebe 2.00
---github.com/kyzn/eksidebe
-
 CREATE DATABASE IF NOT EXISTS eksidebe
 	CHARACTER SET utf8 collate utf8_turkish_ci;
 

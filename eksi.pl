@@ -6,6 +6,8 @@
 #   3: Read mail addresses from a database, not a file.
 #   5: Embed tweets
 
+our $VERSION = '2.00_02';
+
 use DateTime; 
 use MIME::Lite;
 #use HTML::Entities;
@@ -38,6 +40,9 @@ my $folder_temp="/home/kyzn/eksi/";
 
 #You can change these files, as they're called by their variable names.
 my $file_out_html="$folder_temp"."out.html";
+my $file_out_eksidebe_current="/var/www/eksidebe/current.html";
+#$file_out_eksidebe_current="/Users/kyzn/Desktop/current.html"; #local dev
+
 my $file_log="$folder_temp"."log";
 my $log="";
 
@@ -117,6 +122,9 @@ a:hover {
 <h2>$filedate'&#252;n en be&#287;enilen entryleri</h2>
 <br><hr>\n\n\n";
 
+my $out_to_eksidebecom="<h2>$filedate'&#252;n en be&#287;enilen entryleri</h2>
+<br><hr>\n\n\n";
+
 #Get 50 entries, and their references if exists.
 for(my $i=scalar(@debe);$i>0;$i--){
 
@@ -151,8 +159,22 @@ for(my $i=scalar(@debe);$i>0;$i--){
     (<a href=\"https://eksisozluk.com/biri/$entry{'author'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
     ";
 
+    $out_to_eksidebecom.=  "
+    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
+    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
+    </p><h5><div align=\"right\">
+    (<a href=\"https://eksisozluk.com/biri/$entry{'author'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
+    ";
+
   }else{
     $out.=  "
+    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
+    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
+    </p><h5><div align=\"right\">
+    (?, ?, ?$favchar)</div></h5>\n\n
+    ";
+
+    $out_to_eksidebecom.=  "
     <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
     $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
     </p><h5><div align=\"right\">
@@ -170,16 +192,23 @@ for(my $i=scalar(@debe);$i>0;$i--){
     $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$ref_entry{'author'}\" "
     ."target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; "
     ."color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n";  
+    $out_to_eksidebecom.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$ref_entry{'author'}\" "
+    ."target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; "
+    ."color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
 
   }
 
   $out.="<hr>\n\n";
+  $out_to_eksidebecom.="<hr>\n\n";
   $log.="\n";
 }
 
 #Finish the html and write out.
 $out.="<h3>fin.</h3></body>";
+$out_to_eksidebecom.="<h3>fin.</h3>";
 open OUT, ">$file_out_html" or die; print OUT $out; close OUT;
+open OUT, ">$file_out_eksidebe_current" or die; print OUT $out_to_eksidebecom; close OUT;
+
 
 # # Sending to kindles will be disabled temporarily.
 
