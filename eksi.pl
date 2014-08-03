@@ -4,17 +4,13 @@
 #   1: Download images, convert to base64, embed them to html and .mobi files.
 #   2: Create .mobi files by using kindlegen and/or calibre's ebook-convert.
 #   3: Read mail addresses from a database, not a file.
-#   5: Embed tweets
 
-our $VERSION = '2.00_02';
+our $VERSION = '2.00_03';
 
 use DateTime; 
 use MIME::Lite;
-#use HTML::Entities;
-#use open qw/:std :utf8/;
 use Modern::Perl;
-use WWW::Eksisozluk; #Yay!
-#use diagnostics;
+use WWW::Eksisozluk;
 
 #You can call dev mode by passing argument d.
 #This is useful if you want to test the program by 
@@ -156,14 +152,14 @@ for(my $i=scalar(@debe);$i>0;$i--){
     <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
     $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
     </p><h5><div align=\"right\">
-    (<a href=\"https://eksisozluk.com/biri/$entry{'author'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
+    (<a href=\"$entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
     ";
 
     $out_to_eksidebecom.=  "
     <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\">
     $entry{'topic'}</a></h3><p class=\"big\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
     </p><h5><div align=\"right\">
-    (<a href=\"https://eksisozluk.com/biri/$entry{'author'}\" target=\"blank\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
+    (<a href=\"$entry{'author_link'}\" target=\"blank\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
     ";
 
   }else{
@@ -189,10 +185,10 @@ for(my $i=scalar(@debe);$i>0;$i--){
     my %ref_entry=$eksi->entry($entry{'id_ref'});
     if ($ref_entry{'author'} eq "ssg"){ $favchar = "&#10017;";}
     #Add ref entry to html.
-    $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$ref_entry{'author'}\" "
+    $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"$ref_entry{'author_link'}\" "
     ."target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; "
     ."color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n";  
-    $out_to_eksidebecom.=  "<br><h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"https://eksisozluk.com/biri/$ref_entry{'author'}\" "
+    $out_to_eksidebecom.=  "<br><h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"$ref_entry{'author_link'}\" "
     ."target=\"blank\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
 
   }
