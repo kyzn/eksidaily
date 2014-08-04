@@ -5,7 +5,7 @@
 #   2: Create .mobi files by using kindlegen and/or calibre's ebook-convert.
 #   3: Read mail addresses from a database, not a file.
 
-our $VERSION = '2.00_03';
+our $VERSION = '2.00_04';
 
 use DateTime; 
 use MIME::Lite;
@@ -135,9 +135,9 @@ for(my $i=scalar(@debe);$i>0;$i--){
     $entry{'body'}="<i>bu entry silinmi&#351;.</i>";
   }
 
-   #Different fav-star for ssg. Surprise.
    my $favchar = "&#9734;";
-   if ($entry{'author'} eq "ssg"){ $favchar = "&#10017;";}
+   #Different fav-star for ssg. Surprise.
+   #if ($entry{'author'} eq "ssg"){ $favchar = "&#10017;";}
 
    #Shorten very long entries. This is to get rid of "Message clipped. Click to view entire message" thing in gmail.
    #Is not working properly since it may cut before a >. There will be related regexp.
@@ -183,13 +183,14 @@ for(my $i=scalar(@debe);$i>0;$i--){
   if($entry{'id_ref'}!=$entry{'id'} && $entry{'id_ref'}>0){
 
     my %ref_entry=$eksi->entry($entry{'id_ref'});
-    if ($ref_entry{'author'} eq "ssg"){ $favchar = "&#10017;";}
+    #if ($ref_entry{'author'} eq "ssg"){ $favchar = "&#10017;";}
     #Add ref entry to html.
-    $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"$ref_entry{'author_link'}\" "
-    ."target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; "
-    ."color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n";  
-    $out_to_eksidebecom.=  "<br><h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">(<a href=\"$ref_entry{'author_link'}\" "
-    ."target=\"blank\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
+    $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">
+    (<a href=\"$ref_entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none;
+    color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
+
+    $out_to_eksidebecom.=  "<br><h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">
+    (<a href=\"$ref_entry{'author_link'}\" target=\"blank\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
 
   }
 
@@ -203,6 +204,7 @@ $out.="<h3>fin.</h3></body>";
 $out_to_eksidebecom.="<h3>fin.</h3>";
 open OUT, ">$file_out_html" or die; print OUT $out; close OUT;
 open OUT, ">$file_out_eksidebe_current" or die; print OUT $out_to_eksidebecom; close OUT;
+system("php ~/eksi/tweet/eksitweet.php");
 
 
 # # Sending to kindles will be disabled temporarily.
