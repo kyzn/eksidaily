@@ -14,4 +14,4 @@ to send to all recipients, or
 
 to activate dev mode, that is, you can send to another set of recipients for testing purposes.
 
-Although this script is under development as well, we're trying to create a cpan module to make thing simpler than ever. See <a href="http://github.com/kyzn/net-eksisozluk/">net-eksisozluk</a> for details.
+Although this script is under development as well, we're trying to create a cpan module to make thing simpler than ever. See <a href="http://github.com/kyzn/www-eksisozluk/">www-eksisozluk</a> for details.
