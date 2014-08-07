@@ -66,11 +66,5 @@ test.pl
 get.pl
 address.pm
 
-TODO
-kindlegen
-log*
-inlist
-.entry*
-.temptopic
-insert.pl
-
+ignore/
+log
