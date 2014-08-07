@@ -1,11 +1,9 @@
-#   eksidebe: first run on 05-Dec-2012
-
 #   TODO
 #   1: Download images, convert to base64, embed them to html and .mobi files.
 #   2: Create .mobi files by using kindlegen and/or calibre's ebook-convert.
 #   3: Read mail addresses from a database, not a file.
 
-our $VERSION = '2.00_04';
+our $VERSION = '2.01';
 
 use DateTime; 
 use MIME::Lite;
@@ -36,11 +34,11 @@ my $folder_temp="/home/kyzn/eksi/";
 
 #You can change these files, as they're called by their variable names.
 my $file_out_html="$folder_temp"."out.html";
-my $file_out_eksidebe_current="/home/kyzn/eksi/current.html";
-#$file_out_eksidebe_current="/Users/kyzn/Desktop/current.html"; #local dev
 
 my $file_log="$folder_temp"."log";
 my $log="";
+my $favchar = "&#9734;";
+
 
 #This is the addresses to be included. Emails are stored in this file.
 #Please check address_sample.pm for an example.
@@ -118,8 +116,6 @@ a:hover {
 <h2>$filedate'&#252;n en be&#287;enilen entryleri</h2>
 <br><hr>\n\n\n";
 
-my $out_to_eksidebecom="<h2>$filedate'&#252;n en be&#287;enilen entryleri</h2>
-<br><hr>\n\n\n";
 
 #Get 50 entries, and their references if exists.
 for(my $i=scalar(@debe);$i>0;$i--){
@@ -135,9 +131,6 @@ for(my $i=scalar(@debe);$i>0;$i--){
     $entry{'body'}="<i>bu entry silinmi&#351;.</i>";
   }
 
-   my $favchar = "&#9734;";
-   #Different fav-star for ssg. Surprise.
-   #if ($entry{'author'} eq "ssg"){ $favchar = "&#10017;";}
 
    #Shorten very long entries. This is to get rid of "Message clipped. Click to view entire message" thing in gmail.
    #Is not working properly since it may cut before a >. There will be related regexp.
@@ -155,13 +148,6 @@ for(my $i=scalar(@debe);$i>0;$i--){
     (<a href=\"$entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
     ";
 
-    $out_to_eksidebecom.=  "
-    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\">
-    $entry{'topic'}</a></h3><p class=\"big\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
-    </p><h5><div align=\"right\">
-    (<a href=\"$entry{'author_link'}\" target=\"blank\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
-    ";
-
   }else{
     $out.=  "
     <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
@@ -170,12 +156,6 @@ for(my $i=scalar(@debe);$i>0;$i--){
     (?, ?, ?$favchar)</div></h5>\n\n
     ";
 
-    $out_to_eksidebecom.=  "
-    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\">
-    $entry{'topic'}</a></h3><p class=\"big\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
-    </p><h5><div align=\"right\">
-    (?, ?, ?$favchar)</div></h5>\n\n
-    ";
   }
 
 
@@ -183,28 +163,20 @@ for(my $i=scalar(@debe);$i>0;$i--){
   if($entry{'id_ref'}!=$entry{'id'} && $entry{'id_ref'}>0){
 
     my %ref_entry=$eksi->entry($entry{'id_ref'});
-    #if ($ref_entry{'author'} eq "ssg"){ $favchar = "&#10017;";}
-    #Add ref entry to html.
+
     $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">
     (<a href=\"$ref_entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none;
     color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
 
-    $out_to_eksidebecom.=  "<br><h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">
-    (<a href=\"$ref_entry{'author_link'}\" target=\"blank\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
-
   }
 
   $out.="<hr>\n\n";
-  $out_to_eksidebecom.="<br><br><hr>\n\n";
   $log.="\n";
 }
 
 #Finish the html and write out.
 $out.="<h3>fin.</h3></body>";
-$out_to_eksidebecom.="<h3>fin.</h3>";
 open OUT, ">$file_out_html" or die; print OUT $out; close OUT;
-open OUT, ">$file_out_eksidebe_current" or die; print OUT $out_to_eksidebecom; close OUT;
-system("php ~/eksi/tweet/eksitweet.php");
 
 
 # # Sending to kindles will be disabled temporarily.

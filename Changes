@@ -1,0 +1,7 @@
+2.01  7-Aug-14
+	- As www.eksidebe.com is not accepted, the related stuff is removed.
+	- Favchar becomes the same for all, and set at the beginning.
+
+0.01  5-Dec-12
+	- original version; created by h2xs 1.23 with options
+		-AX Net::Eksisozluk
