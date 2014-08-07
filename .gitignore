@@ -67,4 +67,4 @@ get.pl
 address.pm
 
 ignore/
-log
+log*
