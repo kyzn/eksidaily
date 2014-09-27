@@ -28,9 +28,9 @@ my $filedate   = DateTime->now->subtract(days=>1)->dmy;
 
 #You should provide your working folder.
 #You can specify a different path for dev mode.
-my $folder_temp="/home/kyzn/eksi/";
+my $folder_temp="/home/k/eksi/";
 #$folder_temp="/Users/kyzn/git/eksidebe/"; #local dev.
-#if ($dev){ $folder_temp="/home/kyzn/eksi/"; }
+#if ($dev){ $folder_temp="/home/k/eksi/"; }
 
 #You can change these files, as they're called by their variable names.
 my $file_out_html="$folder_temp"."out.html";
