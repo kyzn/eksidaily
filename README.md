@@ -1,4 +1,4 @@
-eksidebe
+eksidaily
 ========
 Download, merge & deliver yesterday's top 50 posts from eksisozluk.com.
 

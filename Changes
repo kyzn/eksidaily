@@ -7,6 +7,7 @@ TODO
 
 2.10 27-Apr-15
 	- Now compatible with WWW::Eksisozluk 0.11
+	- Name changed to eksidaily (was eksidebe)
 
 2.01  7-Aug-14
 	- As www.eksidebe.com is not accepted, the related stuff is removed.
