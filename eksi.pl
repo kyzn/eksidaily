@@ -1,9 +1,4 @@
-#   TODO
-#   1: Download images, convert to base64, embed them to html and .mobi files.
-#   2: Create .mobi files by using kindlegen and/or calibre's ebook-convert.
-#   3: Read mail addresses from a database, not a file.
-
-our $VERSION = '2.01';
+our $VERSION = '2.1';
 
 use DateTime; 
 use MIME::Lite;
@@ -29,7 +24,7 @@ my $filedate   = DateTime->now->subtract(days=>1)->dmy;
 #You should provide your working folder.
 #You can specify a different path for dev mode.
 my $folder_temp="/home/k/eksi/";
-#$folder_temp="/Users/kyzn/git/eksidebe/"; #local dev.
+#my $folder_temp="/Users/kyzn/git/eksidaily/"; #local dev.
 #if ($dev){ $folder_temp="/home/k/eksi/"; }
 
 #You can change these files, as they're called by their variable names.
@@ -58,13 +53,13 @@ if($to_email eq ""){
   die "No email recipient found";
 }
 
-# #Kindle sending is disabled temporarily.
-# my $to_kindle;
-# if($dev){ 
-#   $to_kindle= $adr{to_kindle_dev};
-# }else{
-#   $to_kindle= $adr{to_kindle_all};
-# }
+##Kindle is disabled for a while
+#my $to_kindle;
+#if($dev){ 
+#  $to_kindle= $adr{to_kindle_dev};
+#}else{
+#  $to_kindle= $adr{to_kindle_all};
+#}
 
 # #If there is no recipient, then die.
 # if($to_kindle eq ""){
@@ -113,7 +108,7 @@ a:hover {
 }
 </style>
 </head><body>\n\n\n
-<h2>$filedate'&#252;n en be&#287;enilen entryleri</h2>
+<h2>eksidaily ${filedate}</h2>
 <br><hr>\n\n\n";
 
 
@@ -124,15 +119,14 @@ for(my $i=scalar(@debe);$i>0;$i--){
   $log.="$i $entry{'id'} $entry{'id_ref'}";
   #Show a specific message for deleted entries accordingly.
   if ($entry{'is_found'}==0){ 
-    $entry{'date_print'}="?";
-    $entry{'number_in_topic'}="?";
+    $entry{'date'}="?";
     $entry{'author'}="?";
     $entry{'fav_count'}="?";
     $entry{'body'}="<i>bu entry silinmi&#351;.</i>";
   }
 
 
-   #Shorten very long entries. This is to get rid of "Message clipped. Click to view entire message" thing in gmail.
+   #TODO: Shorten very long entries. This is to get rid of "Message clipped. Click to view entire message" thing in gmail.
    #Is not working properly since it may cut before a >. There will be related regexp.
    #if (length($entries_body[$i])>2050){
    #  $entries_body[$i] = substr $entries_body[$i],0,2000;
@@ -143,15 +137,15 @@ for(my $i=scalar(@debe);$i>0;$i--){
   if($entry{'is_found'}==1){
     $out.=  "
     <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
+    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry{'body'}
     </p><h5><div align=\"right\">
-    (<a href=\"$entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date_print'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
+    (<a href=\"$entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
     ";
 
   }else{
     $out.=  "
     <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\"><b>$entry{'number_in_topic'}. </b> $entry{'body'}
+    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry{'body'}
     </p><h5><div align=\"right\">
     (?, ?, ?$favchar)</div></h5>\n\n
     ";
@@ -164,9 +158,9 @@ for(my $i=scalar(@debe);$i>0;$i--){
 
     my %ref_entry=$eksi->entry($entry{'id_ref'});
 
-    $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\"><b>$ref_entry{'number_in_topic'}. </b> $ref_entry{'body'}</p><h5><div align=\"right\">
+    $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\">$ref_entry{'body'}</p><h5><div align=\"right\">
     (<a href=\"$ref_entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none;
-    color:black\">$ref_entry{'date_print'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
+    color:black\">$ref_entry{'date'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
 
   }
 
@@ -175,46 +169,46 @@ for(my $i=scalar(@debe);$i>0;$i--){
 }
 
 #Finish the html and write out.
-$out.="<h3>fin.</h3></body>";
+$out.="</body>";
 open OUT, ">$file_out_html" or die; print OUT $out; close OUT;
 
 
-# # Sending to kindles will be disabled temporarily.
+##Sending to kindles is disabled temporarily.
 
-# my $msg = MIME::Lite->new(
-#   From    => "$adr{from}",
-#   To      => "$to_kindle",
-#   'Reply-to' => "$adr{reply_to}",
-#   Subject => "$filedate",
-#   Type    => 'multipart/mixed',
-# );
+#my $msg_kindle = MIME::Lite->new(
+#  From    => "$adr{from}",
+#  To      => "$to_kindle",
+#  'Reply-to' => "$adr{reply_to}",
+#  Subject => "$filedate",
+#  Type    => 'multipart/mixed',
+#);
 
-# $msg->attach(
-#   Type     => 'application/html',
-#   Path     => "$file_out_html",
-#   Filename => "$filedate".".html",
-#   Disposition => 'attachment'
-# );
+#$msg_kindle->attach(
+#  Type     => 'application/html',
+#  Path     => "$file_out_html",
+#  Filename => "$filedate".".html",
+#  Disposition => 'attachment'
+#);
 
-# $msg->send or die "Error on sending to kindles.";
+#$msg_kindle->send or die "Error on sending to kindles.";
 
 
 # Send to email readers.
 
-my $msg = MIME::Lite->new(
+my $msg_mail = MIME::Lite->new(
   From    => "$adr{from}",
   Bcc     => "$to_email",
-  Subject => "$filedate",
+  Subject => "eksidaily $filedate",
   Type    => 'multipart/mixed',
 );
 
-$msg->attach(
+$msg_mail->attach(
   Type     => 'application/html',
   Path     => "$file_out_html",
   Filename => "$filedate".".html",
 );
 
-$msg->send or die "Error on sending to emails.";
+$msg_mail->send or die "Error on sending to emails.";
 
 #Write out the log file.
 $log.= "\n# DONE #\n\n\n";

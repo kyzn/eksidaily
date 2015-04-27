@@ -1,3 +1,13 @@
+TODO
+	- Download images, convert to base64, embed them to html and .mobi files.
+	- Create .mobi files by using kindlegen and/or calibre's ebook-convert.
+	- Read mail addresses from a database, not a file.
+	- Store entries/authors in a database as well.
+	- Shorten very long entries
+
+2.10 27-Apr-15
+	- Now compatible with WWW::Eksisozluk 0.11
+
 2.01  7-Aug-14
 	- As www.eksidebe.com is not accepted, the related stuff is removed.
 	- Favchar becomes the same for all, and set at the beginning.
