@@ -1,0 +1,15 @@
+2.24 2017-01-15
+  - Compatible with WWW::Eksi 0.24
+  - Renamed to eksiweekly (no more daily lists)
+
+2.10 2015-04-27
+  - Compatible with WWW::Eksisozluk 0.11
+  - Renamed to eksidaily (was eksidebe)
+
+2.01 2014-08-07
+  - Homepage related material is removed
+  - Favchar fix
+
+0.01 2012-12-05
+  - original version; created by h2xs 1.23 with options
+    -AX Net::Eksisozluk

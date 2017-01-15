@@ -1,76 +1,59 @@
-our $VERSION = '2.1';
+package EksiWeekly;
+our $VERSION='2.24';
 
-use DateTime; 
-use MIME::Lite;
-use Modern::Perl;
-use WWW::Eksisozluk;
+use warnings;
+use strict;
 
-#You can call dev mode by passing argument d.
-#This is useful if you want to test the program by 
-#sending the result to different set of mail addresses.
+use WWW::Eksi 0.24;
+use DateTime;
+use File::Slurp;
+use Getopt::Long;
 
-my $dev=0;
-foreach(@ARGV){
-  if(lc($_) eq ("d")){$dev=1;}
-  print "d ";
-}
+=head1 NAME
 
+EksiWeekly - Deliver Eksisozluk GHEBE
 
-#Date related stuff here.
-my $dt   = DateTime->now; 
-my $filedate   = DateTime->now->subtract(days=>1)->dmy;
+=head1 DESCRIPTION
 
+Download, merge & deliver last week's top 20 posts from eksisozluk.com.
 
-#You should provide your working folder.
-#You can specify a different path for dev mode.
-my $folder_temp="/home/k/eksi/";
-#my $folder_temp="/Users/kyzn/git/eksidaily/"; #local dev.
-#if ($dev){ $folder_temp="/home/k/eksi/"; }
+Saves merged file at `/tmp/{year}-{week_of_year}.html`.
 
-#You can change these files, as they're called by their variable names.
-my $file_out_html="$folder_temp"."out.html";
+=head1 SYNOPSIS
 
-my $file_log="$folder_temp"."log";
-my $log="";
-my $favchar = "&#9734;";
+    perl eksi.pl --send-email --sleep 10 --from=your@email.com --to=one@subscriber.com --to=two@subscriber.com
 
+ - Add `FROM:` and `TO:` addresses with command line arguments. You can add more than one receivers.
+ - If you want to deliver emails, make sure to use `--send-email` (otherwise it will not send).
+ - Adjust politeness delay (for web crawl) with `--sleep`. It's set to 5 seconds by default.
 
-#This is the addresses to be included. Emails are stored in this file.
-#Please check address_sample.pm for an example.
-use address;
-#This hash will store mail addresses.
-my %adr=getAddress();
+=cut
 
-#Recipients are chosen differently depending on whether you're on dev mode or not.
-my $to_email;
-if($dev){ 
-   $to_email= $adr{to_email_dev};
-}else{
-  $to_email= $adr{to_email_all};
-}
-#If there is no recipient, then die.
-if($to_email eq ""){
-  die "No email recipient found";
-}
+my @to_email;
+my $from_email;
+my $politeness_delay = 5;
+my $send_email       = 0;
 
-##Kindle is disabled for a while
-#my $to_kindle;
-#if($dev){ 
-#  $to_kindle= $adr{to_kindle_dev};
-#}else{
-#  $to_kindle= $adr{to_kindle_all};
-#}
+GetOptions(
+  "to=s@"      => \@to_email,
+  "from=s"     => \$from_email,
+  "sleep=i"    => \$politeness_delay,
+  "send-email" => \$send_email,
+);
 
-# #If there is no recipient, then die.
-# if($to_kindle eq ""){
-#   die "No kindle recipient found";
-# }
+my $e        = WWW::Eksi->new;
+my @ghebe    = $e->ghebe($politeness_delay);
+
+my $dow      = DateTime->now->day_of_week;
+my $monday   = DateTime->now->subtract(days=>($dow-1));
+my $year     = $monday->year;
+my $week     = $monday->week_number;
+$week        = "0$week" if $week=~/^\d$/;
+my $filename = "$year-$week";
+my $filepath = "/tmp/$filename.html";
 
 
-my $eksi = WWW::Eksisozluk->new();
-my @debe = $eksi->debe_ids();
-
-#Start creating the html file.
+#Start writing to html.
 my $out="<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n
 <html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"tr\"><head>\n
 <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />\n
@@ -93,7 +76,7 @@ img{
   max-width:250px;
   overflow:hidden;
 }
-body{    
+body{
   font: 9pt Verdana, sans-serif;
     background-color: #cccccc;
     color: black;
@@ -108,114 +91,43 @@ a:hover {
 }
 </style>
 </head><body>\n\n\n
-<h2>eksidaily ${filedate}</h2>
+<h2>eksiweekly ${year}-${week}</h2>
 <br><hr>\n\n\n";
 
 
-#Get 50 entries, and their references if exists.
-for(my $i=scalar(@debe);$i>0;$i--){
-
-  my %entry = $eksi->entry($debe[$i-1]);
-  $log.="$i $entry{'id'} $entry{'id_ref'}";
-  #Show a specific message for deleted entries accordingly.
-  if ($entry{'is_found'}==0){ 
-    $entry{'date'}="?";
-    $entry{'author'}="?";
-    $entry{'fav_count'}="?";
-    $entry{'body'}="<i>bu entry silinmi&#351;.</i>";
-  }
-
-
-   #TODO: Shorten very long entries. This is to get rid of "Message clipped. Click to view entire message" thing in gmail.
-   #Is not working properly since it may cut before a >. There will be related regexp.
-   #if (length($entries_body[$i])>2050){
-   #  $entries_body[$i] = substr $entries_body[$i],0,2000;
-   #  $entries_body[$i].= "<a href=\"https://eksisozluk.com/entry/$entries_id[$i]\" target=\"blank\" style=\"text-decoration:none;\">  <i>devam&#305;</i></a>";
-   #}
-
-  #Add entry to html.
-  if($entry{'is_found'}==1){
-    $out.=  "
-    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry{'body'}
-    </p><h5><div align=\"right\">
-    (<a href=\"$entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'author'}</a>, <a href=\"$entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry{'date'}, $entry{'fav_count'}$favchar</a>)</div></h5>\n\n
-    ";
-
-  }else{
-    $out.=  "
-    <h3>$i. <a href=\"$entry{'topic_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-    $entry{'topic'}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry{'body'}
-    </p><h5><div align=\"right\">
-    (?, ?, ?$favchar)</div></h5>\n\n
-    ";
-
-  }
-
-
-  
-  if($entry{'id_ref'}!=$entry{'id'} && $entry{'id_ref'}>0){
-
-    my %ref_entry=$eksi->entry($entry{'id_ref'});
-
-    $out.=  "<h3>g&uuml;n&uuml;n ilk entrysi:</h3><p class=\"bigref\" style=\"text-align:justify;\">$ref_entry{'body'}</p><h5><div align=\"right\">
-    (<a href=\"$ref_entry{'author_link'}\" target=\"blank\" style=\"text-decoration:none; color:black\">$ref_entry{'author'}</a>, <a href=\"$ref_entry{'id_link'}\" target=\"blank\" style=\"text-decoration:none;
-    color:black\">$ref_entry{'date'}, $ref_entry{'fav_count'}$favchar</a>)</div></h5>\n\n"; 
-
-  }
-
-  $out.="<hr>\n\n";
-  $log.="\n";
+# Write entries to html
+my $i=scalar(@ghebe)+1;
+foreach my $entry (reverse @ghebe){
+  $i--;
+  $out.=  "
+  <h3>$i. <a href=\"$entry->{topic_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">
+  $entry->{topic_title}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry->{body_processed}
+  </p><h5><div align=\"right\">
+  (<a href=\"$entry->{author_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry->{author_name}</a>, <a href=\"$entry->{entry_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry->{time_as_seen}, $entry->{fav_count}&#9734;</a>)</div></h5>\n\n<hr>\n\n";
 }
 
-#Finish the html and write out.
+
+# Finish up html & write out
 $out.="</body>";
-open OUT, ">$file_out_html" or die; print OUT $out; close OUT;
+write_file($filepath,$out);
 
 
-##Sending to kindles is disabled temporarily.
+# Send to email subscribers.
+if( $send_email ){
+  foreach my $subscriber (@to_email){
+    my $msg_mail = MIME::Lite->new(
+      From    => $from_email,
+      To      => $subscriber,
+      Subject => "eksiweekly $filename",
+      Type    => 'multipart/mixed',
+    );
 
-#my $msg_kindle = MIME::Lite->new(
-#  From    => "$adr{from}",
-#  To      => "$to_kindle",
-#  'Reply-to' => "$adr{reply_to}",
-#  Subject => "$filedate",
-#  Type    => 'multipart/mixed',
-#);
+    $msg_mail->attach(
+      Type     => 'application/html',
+      Path     => "$filepath",
+      Filename => "$filename.html",
+    );
 
-#$msg_kindle->attach(
-#  Type     => 'application/html',
-#  Path     => "$file_out_html",
-#  Filename => "$filedate".".html",
-#  Disposition => 'attachment'
-#);
-
-#$msg_kindle->send or die "Error on sending to kindles.";
-
-
-# Send to email readers.
-
-my $msg_mail = MIME::Lite->new(
-  From    => "$adr{from}",
-  Bcc     => "$to_email",
-  Subject => "eksidaily $filedate",
-  Type    => 'multipart/mixed',
-);
-
-$msg_mail->attach(
-  Type     => 'application/html',
-  Path     => "$file_out_html",
-  Filename => "$filedate".".html",
-);
-
-$msg_mail->send or die "Error on sending to emails.";
-
-#Write out the log file.
-$log.= "\n# DONE #\n\n\n";
-open LOG, ">>$file_log" or die;
-print LOG $log;
-close LOG;
-
-#Move the html file to archive.
-system("mv -f $file_out_html ${folder_temp}archive/$filedate");
-print "\n";
+    $msg_mail->send or next "Error on sending email to $subscriber";
+  }
+}

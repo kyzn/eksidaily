@@ -1,13 +1,13 @@
-eksidaily
+eksiweekly
 ========
-Download, merge & deliver yesterday's top 50 posts from eksisozluk.com.
+Download, merge & deliver last week's top 20 posts from eksisozluk.com
 
-It used to deliver to kindle devices, but right now it's not working. You can still deliver to mail addresses.
 
-Run program normally (send to all recipients in address.pm)
-	
-	perl eksi.pl
+Saves merged file at `/tmp/{year}-{week_of_year}.html`.
 
-Dev mode (send to only developer recipients)
 
-	perl eksi.pl d
+    perl eksi.pl --send-email --sleep 10 --from=your@email.com --to=one@subscriber.com --to=two@subscriber.com
+
+ - Add `FROM:` and `TO:` addresses with command line arguments. You can add more than one receivers.
+ - If you want to deliver emails, make sure to use `--send-email` (otherwise it will not send).
+ - Adjust politeness delay (for web crawl) with `--sleep`. It's set to 5 seconds by default.
