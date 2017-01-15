@@ -1,70 +1,56 @@
-/blib/
-/.build/
-_build/
-cover_db/
-inc/
-Build
+
+# Created by https://www.gitignore.io/api/perl,linux
+
+### Perl ###
 !Build/
-Build.bat
-/Makefile
-/Makefile.old
+.last_cover_stats
+/META.yml
+/META.json
+/MYMETA.*
 *.o
 *.bs
-*.db
-Thumbs.db 
-Desktop.ini
-.DS_Store
-.svn
-._*
-.Spotlight-V100
-.Trashes
- 
-######################
-# Eclipse
-######################
- 
-*.pydevproject
-.project
-.metadata
-bin/**
-tmp/**
-tmp/**/*
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.classpath
-.settings/
-.loadpath
-/src/main/resources/rebel.xml
 
-# External tool builders
-.externalToolBuilders/
- 
-# Locally stored "Eclipse launch configurations"
-*.launch
- 
-# CDT-specific
-.cproject
- 
-# PDT-specific
-.buildpath
+# Devel::Cover
+cover_db/
+
+# Devel::NYTProf
+nytprof.out
+
+# Dizt::Zilla
+/.build/
+
+# Module::Build
+_build/
+Build
+Build.bat
+
+# Module::Install
+inc/
+
+# ExtUitls::MakeMaker
+/blib/
+/_eumm/
+/*.gz
+/Makefile
+/Makefile.old
+/MANIFEST.bak
+/pm_to_blib
+/*.zip
 
 
-######################
-# Project specific
-######################
+### Linux ###
+*~
 
-archive/
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
 
-*.html
-*.css
-#*.sql
+# KDE directory preferences
+.directory
 
-test.pl
-get.pl
-address.pm
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
 
-ignore/
-log*
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+# End of https://www.gitignore.io/api/perl,linux
