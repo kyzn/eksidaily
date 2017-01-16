@@ -8,6 +8,7 @@ use WWW::Eksi 0.24;
 use DateTime;
 use File::Slurp;
 use Getopt::Long;
+use MIME::Lite;
 
 =head1 NAME
 
