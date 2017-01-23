@@ -1,10 +1,12 @@
-package EksiWeekly;
-our $VERSION='2.24';
+#! /usr/bin/perl
+
+package eksimail;
+our $VERSION='2.26';
 
 use warnings;
 use strict;
 
-use WWW::Eksi 0.24;
+use WWW::Eksi 0.26;
 use DateTime;
 use File::Slurp;
 use Getopt::Long;
@@ -12,26 +14,50 @@ use MIME::Lite;
 
 =head1 NAME
 
-EksiWeekly - Deliver Eksisozluk GHEBE
+eksimail - Deliver list of eksisozluk entries
 
 =head1 DESCRIPTION
 
-Download, merge & deliver last week's top 20 posts from eksisozluk.com.
+Download, merge & deliver lists of entries from eksisozluk.com
 
 Saves merged file at `/tmp/{year}-{week_of_year}.html`.
 
 =head1 SYNOPSIS
 
-    perl eksi.pl --send-email --sleep 10 --from=your@email.com --to=one@subscriber.com --to=two@subscriber.com
+    ./eksi-mail --list=weekly --send-email --sleep 10 --from=your@email.com --to=one@subscriber.com --to=two@subscriber.com
 
  - Add `FROM:` and `TO:` addresses with command line arguments. You can add more than one receivers.
  - If you want to deliver emails, make sure to use `--send-email` (otherwise it will not send).
  - Adjust politeness delay (for web crawl) with `--sleep`. It's set to 5 seconds by default.
 
+=head1 Arguments
+
+=head2 list
+
+  - `weekly`: Top 20 posts from last week, published by eksisozluk.com. Output is saved at `/tmp/{year}-{week_of_year}.html`.
+  - `daily`: Most popular entries from yesterday, curated by `WWW::Eksi`. Output is saved at `/tmp/{ymd}.html`.
+
+=head2 send-email
+
+  - Does not send any email until this flag is set
+
+=head2 sleep
+
+  - Amount of seconds to sleep between each request. This is passes to `WWW::Eksi` as politeness delay argument. Defaults to 5 if not provided.
+
+=head2 from
+
+  - Email address that email will be sent from
+
+=head2 to
+
+  - Email address to send email to. This argument can be used more than once (see sample above)
+
 =cut
 
 my @to_email;
 my $from_email;
+my $list;
 my $politeness_delay = 5;
 my $send_email       = 0;
 
@@ -40,17 +66,27 @@ GetOptions(
   "from=s"     => \$from_email,
   "sleep=i"    => \$politeness_delay,
   "send-email" => \$send_email,
+  "list=s"     => \$list,
 );
 
+die "Please provide --list={weekly|daily}"
+  unless $list && ($list eq 'weekly' || $list eq 'daily');
+
 my $e        = WWW::Eksi->new;
-my @ghebe    = $e->ghebe($politeness_delay);
+my @entries  = $list eq 'weekly'
+             ? $e->ghebe($politeness_delay)
+             : $e->doludolu($politeness_delay);
 
 my $dow      = DateTime->now->day_of_week;
+my $ymd      = DateTime->now->ymd;
 my $monday   = DateTime->now->subtract(days=>($dow-1));
 my $year     = $monday->year;
 my $week     = $monday->week_number;
 $week        = "0$week" if $week=~/^\d$/;
-my $filename = "$year-$week";
+
+my $filename = $list eq 'weekly'
+             ? "$year-$week"
+             : "$ymd";
 my $filepath = "/tmp/$filename.html";
 
 
@@ -92,13 +128,13 @@ a:hover {
 }
 </style>
 </head><body>\n\n\n
-<h2>eksiweekly ${year}-${week}</h2>
+<h2>eksi$list $filename</h2>
 <br><hr>\n\n\n";
 
 
 # Write entries to html
-my $i=scalar(@ghebe)+1;
-foreach my $entry (reverse @ghebe){
+my $i=scalar(@entries)+1;
+foreach my $entry (reverse @entries){
   $i--;
   $out.=  "
   <h3>$i. <a href=\"$entry->{topic_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">
@@ -119,7 +155,7 @@ if( $send_email ){
     my $msg_mail = MIME::Lite->new(
       From    => $from_email,
       To      => $subscriber,
-      Subject => "eksiweekly $filename",
+      Subject => "eksi$list $filename",
       Type    => 'multipart/mixed',
     );
 
