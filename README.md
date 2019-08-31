@@ -4,11 +4,11 @@ Download, merge & deliver lists of entries from eksisozluk.com
 
 # Install Dependencies
 
-    sudo cpan WWW::Eksi DateTime File::Slurp Getopt::Long MIME::Lite
+    cpanm WWW::Eksi DateTime File::Slurp Getopt::Long MIME::Lite
 
 # Sample Run
 
-    ./eksi-mail --list=weekly --send-email --sleep 10 --from=your@email.com --to=one@subscriber.com --to=two@subscriber.com
+    perl ./eksi-mail --list=weekly --send-email --sleep 10 --from=your@email.com --to=one@subscriber.com --to=two@subscriber.com
 
 
 # Arguments
@@ -16,7 +16,7 @@ Download, merge & deliver lists of entries from eksisozluk.com
 ## list
 
   - `weekly`: Top 20 posts from last week, published by eksisozluk.com. Output is saved at `/tmp/{year}-{week_of_year}.html`.
-  - `daily`: Most popular entries from yesterday, curated by [WWW::Eksi](https://github.com/kyzn/WWW-Eksi).Output is saved at `/tmp/{ymd}.html`.
+  - `daily`: Most popular entries from yesterday, published by eksisozluk.com. Output is saved at `/tmp/{ymd}.html`.
 
 ## send-email
 
@@ -24,7 +24,7 @@ Download, merge & deliver lists of entries from eksisozluk.com
 
 ## sleep
 
-  - Amount of seconds to sleep between each request. This is passes to [WWW::Eksi](https://github.com/kyzn/WWW-Eksi) as politeness delay argument. Defaults to 5 if not provided.
+  - Seconds to sleep between each download. This is passed to [WWW::Eksi](https://github.com/kyzn/WWW-Eksi) as politeness delay argument. Defaults to 5 if not provided.
 
 ## from
 

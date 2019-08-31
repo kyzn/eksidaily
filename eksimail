@@ -1,12 +1,12 @@
 #! /usr/bin/perl
 
 package eksimail;
-our $VERSION='2.26';
+our $VERSION='2.32';
 
 use warnings;
 use strict;
 
-use WWW::Eksi 0.26;
+use WWW::Eksi 0.32;
 use DateTime;
 use File::Slurp;
 use Getopt::Long;
@@ -35,7 +35,7 @@ Saves merged file at `/tmp/{year}-{week_of_year}.html`.
 =head2 list
 
   - `weekly`: Top 20 posts from last week, published by eksisozluk.com. Output is saved at `/tmp/{year}-{week_of_year}.html`.
-  - `daily`: Most popular entries from yesterday, curated by `WWW::Eksi`. Output is saved at `/tmp/{ymd}.html`.
+  - `daily`: Most popular entries from yesterday, published by eksisozluk.com. Output is saved at `/tmp/{ymd}.html`.
 
 =head2 send-email
 
@@ -75,7 +75,7 @@ die "Please provide --list={weekly|daily}"
 my $e        = WWW::Eksi->new;
 my @entries  = $list eq 'weekly'
              ? $e->ghebe($politeness_delay)
-             : $e->doludolu($politeness_delay);
+             : $e->debe($politeness_delay);
 
 my $dow      = DateTime->now->day_of_week;
 my $ymd      = DateTime->now->ymd;
