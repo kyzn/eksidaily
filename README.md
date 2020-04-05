@@ -4,6 +4,7 @@ Download, merge & deliver lists of entries from eksisozluk.com
 
 # Install Dependencies
 
+    sudo apt-get install sendmail
     cpanm WWW::Eksi DateTime File::Slurp Getopt::Long MIME::Lite
 
 # Sample Run
