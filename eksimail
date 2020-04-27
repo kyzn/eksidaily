@@ -95,8 +95,8 @@ my $out="<h2>eksi$list $filename</h2><br><hr>\n";
 my $i=scalar(@entries)+1;
 foreach my $entry (reverse @entries){
 
-  if (length($entry->{body_processed}) > 2240){ # 8 tweets
-    $entry->{body_shortened} = substr($entry->{body_processed},0,2280) . "<br>(<i>devam ediyor</i><br>";
+  if (length($entry->{body_processed}) > 9*280){ # 9 tweets
+    $entry->{body_shortened} = substr($entry->{body_processed},0,8*280-1) . "<br>(<i>devam ediyor</i><br>";
   } else {
     $entry->{body_shortened} = $entry->{body_processed};
   }
