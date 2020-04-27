@@ -94,10 +94,17 @@ my $filepath = "/tmp/$filename.html";
 my $out="<h2>eksi$list $filename</h2><br><hr>\n";
 my $i=scalar(@entries)+1;
 foreach my $entry (reverse @entries){
+
+  if (length($entry->{body_processed}) > 2240){ # 8 tweets
+    $entry->{body_shortened} = substr($entry->{body_processed},0,2280) . "<br>(<i>devam ediyor</i><br>";
+  } else {
+    $entry->{body_shortened} = $entry->{body_processed};
+  }
+
   $i--;
   $out.=  "
   <h3>$i. <a href=\"$entry->{topic_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-  $entry->{topic_title}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry->{body_processed}
+  $entry->{topic_title}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry->{body_shortened}
   </p><h5><div align=\"right\">
   (<a href=\"$entry->{author_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry->{author_name}</a>, <a href=\"$entry->{entry_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry->{time_as_seen}, $entry->{fav_count}&#9734;</a>)</div></h5><hr>\n";
 }
