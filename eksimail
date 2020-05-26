@@ -20,38 +20,68 @@ eksimail - Deliver list of eksisozluk entries
 
 Download, merge & deliver lists of entries from eksisozluk.com
 
-Saves merged file at `/tmp/{year}-{week_of_year}.html`.
+Install dependencies as follows:
+
+    sudo apt-get install sendmail
+    cpanm WWW::Eksi DateTime File::Slurp Getopt::Long MIME::Lite
 
 =head1 SYNOPSIS
 
-    ./eksi-mail --list=weekly --send-email --sleep 10 --from=your@email.com --to=one@subscriber.com --to=two@subscriber.com
+    perl ./eksimail --list=daily --send-email --from=you@a.com --to=one@b.com --to=two@c.com
 
- - Add `FROM:` and `TO:` addresses with command line arguments. You can add more than one receivers.
- - If you want to deliver emails, make sure to use `--send-email` (otherwise it will not send).
- - Adjust politeness delay (for web crawl) with `--sleep`. It's set to 5 seconds by default.
+=over
+
+=item
+
+Add C<FROM:> and C<TO:> addresses with command line arguments. You can add more than one receivers.
+
+=item
+
+If you want to deliver emails, make sure to use C<--send-email> (otherwise it will not send).
+
+=item
+
+Adjust politeness delay (for web crawl) with C<--sleep>. It's set to 5 seconds by default.
+
+=back
 
 =head1 Arguments
 
 =head2 list
 
-  - `weekly`: Top 20 posts from last week, published by eksisozluk.com. Output is saved at `/tmp/{year}-{week_of_year}.html`.
-  - `daily`: Most popular entries from yesterday, published by eksisozluk.com. Output is saved at `/tmp/{ymd}.html`.
+There are two choices.
+
+=over
+
+=item
+
+C<weekly>: Top 20 posts from last week, published by eksisozluk.com. Output is saved at C</tmp/{year}-{week_of_year}.html>.
+
+=item
+
+C<daily>: Most popular entries from yesterday, published by eksisozluk.com. Output is saved at C</tmp/{ymd}.html>.
+
+=back
 
 =head2 send-email
 
-  - Does not send any email until this flag is set
+Does not send any email until this flag is set
 
 =head2 sleep
 
-  - Amount of seconds to sleep between each request. This is passes to `WWW::Eksi` as politeness delay argument. Defaults to 5 if not provided.
+Amount of seconds to sleep between each request. This is passed to C<WWW::Eksi> as politeness delay argument. Defaults to 5 if not provided.
 
 =head2 from
 
-  - Email address that email will be sent from
+Email address that email will be sent from
 
 =head2 to
 
-  - Email address to send email to. This argument can be used more than once (see sample above)
+Email address to send email to. This argument can be used more than once (see sample above)
+
+=head1 LICENSE
+
+MIT.
 
 =cut
 
