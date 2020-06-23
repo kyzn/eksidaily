@@ -1,3 +1,8 @@
+2.33 2020-06-23
+  - SendGrid Web API support
+  - Some utf8 work
+  - Use carton
+
 2.32 2019-08-31
   - Compatible with WWW::Eksi 0.32
   - Daily lists use official DEBE now

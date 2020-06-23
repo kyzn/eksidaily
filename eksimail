@@ -1,16 +1,21 @@
 #! /usr/bin/perl
 
 package eksimail;
-our $VERSION='2.32';
+our $VERSION='2.33';
 
 use warnings;
 use strict;
 
-use WWW::Eksi 0.32;
 use DateTime;
-use File::Slurp;
+use Email::SendGrid::V3;
+use File::Slurper qw/write_text/;
 use Getopt::Long;
 use MIME::Lite;
+use WWW::Eksi 0.33;
+
+use Encode qw/decode_utf8/;
+use utf8;
+binmode STDOUT, ':encoding(utf8)';
 
 =head1 NAME
 
@@ -20,24 +25,36 @@ eksimail - Deliver list of eksisozluk entries
 
 Download, merge & deliver lists of entries from eksisozluk.com
 
-Install dependencies as follows:
+Install C<sendmail> if you are not going to use SendGrid Web API:
 
     sudo apt-get install sendmail
-    cpanm WWW::Eksi DateTime File::Slurp Getopt::Long MIME::Lite
+
+Install C<cpanm> and C<carton>
+
+    curl -L http://cpanmin.us | perl - App::cpanminus
+    cpanm Carton
+
+This will install dependencies into local/
+
+    carton install
 
 =head1 SYNOPSIS
 
-    perl ./eksimail --list=daily --send-email --from=you@a.com --to=one@b.com --to=two@c.com
+    carton exec ./eksimail --list=daily --from=you@a.com --to=one@b.com --to=two@c.com
 
 =over
 
 =item
 
-Add C<FROM:> and C<TO:> addresses with command line arguments. You can add more than one receivers.
+Add C<--from> and C<--to> addresses with command line arguments. You can add more than one receivers.
 
 =item
 
-If you want to deliver emails, make sure to use C<--send-email> (otherwise it will not send).
+If you don't add a C<--from> an email won't be sent.
+
+=item
+
+If you want to send via SendGrid Web API, provide C<--sendgrid-api-key>. Otherwise C<sendmail> will be used.
 
 =item
 
@@ -63,9 +80,9 @@ C<daily>: Most popular entries from yesterday, published by eksisozluk.com. Outp
 
 =back
 
-=head2 send-email
+=head2 sendgrid-api-key
 
-Does not send any email until this flag is set
+Provide SendGrid Web API key to use SendGrid. Otherwise C<sendmail> will be used.
 
 =head2 sleep
 
@@ -73,7 +90,7 @@ Amount of seconds to sleep between each request. This is passed to C<WWW::Eksi> 
 
 =head2 from
 
-Email address that email will be sent from
+Email address that email will be sent from. If it's not set, an email won't be sent.
 
 =head2 to
 
@@ -90,6 +107,7 @@ my $from_email;
 my $list;
 my $politeness_delay = 5;
 my $send_email       = 0;
+my $sendgrid_api_key;
 
 GetOptions(
   "to=s@"      => \@to_email,
@@ -97,6 +115,7 @@ GetOptions(
   "sleep=i"    => \$politeness_delay,
   "send-email" => \$send_email,
   "list=s"     => \$list,
+  "sendgrid-api-key=s" => \$sendgrid_api_key,
 );
 
 die "Please provide --list={weekly|daily}"
@@ -119,43 +138,51 @@ my $filename = $list eq 'weekly'
              : "$ymd";
 my $filepath = "/tmp/$filename.html";
 
-
-# Write html
-my $out="<h2>eksi$list $filename</h2><br><hr>\n";
-my $i=scalar(@entries)+1;
+# Start html
+my $out = "<h2>eksi$list $filename</h2><br><hr>\n";
+my $i   = scalar(@entries) + 1;
 foreach my $entry (reverse @entries){
-
-  if (length($entry->{body_processed}) > 9*280){ # 9 tweets
-    $entry->{body_shortened} = substr($entry->{body_processed},0,8*280-1) . "<br><br><br><a href=\"$entry->{entry_url}\" target=\"_blank\" style=\"text-decoration:none; color:black\"><i>(devam ediyor)</i></a><br>";
-  } else {
-    $entry->{body_shortened} = $entry->{body_processed};
-  }
-
   $i--;
-  $out.=  "
+  $out .= "
   <h3>$i. <a href=\"$entry->{topic_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">
-  $entry->{topic_title}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry->{body_shortened}
+  $entry->{topic_title}</a></h3><p class=\"big\" style=\"text-align:justify;\">$entry->{body_processed}
   </p><h5><div align=\"right\">
   (<a href=\"$entry->{author_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry->{author_name}</a>, <a href=\"$entry->{entry_url}\" target=\"blank\" style=\"text-decoration:none; color:black\">$entry->{time_as_seen}, $entry->{fav_count}&#9734;</a>)</div></h5><hr>\n";
 }
-write_file($filepath,$out);
+
+$out = decode_utf8($out,1);
+write_text($filepath,$out);
 
 # Send to email subscribers.
-if( $send_email ){
-  foreach my $subscriber (@to_email){
-    my $msg_mail = MIME::Lite->new(
-      From    => $from_email,
-      To      => $subscriber,
-      Subject => "eksi$list $filename",
-      Type    => 'multipart/mixed',
-    );
+if($from_email){
+  if ($sendgrid_api_key){
 
-    $msg_mail->attach(
-      Type     => 'application/html',
-      Path     => "$filepath",
-      Filename => "$filename.html",
-    );
+    my $sg = Email::SendGrid::V3->new(api_key => $sendgrid_api_key);
+    foreach my $subscriber (@to_email){
+      $sg->from($from_email)
+        ->subject("eksi$list $filename")
+        ->add_content('text/html', $out)
+        ->add_envelope( to => [ $subscriber ] )
+        ->send;
+    }
 
-    $msg_mail->send or next "Error on sending email to $subscriber";
+  }
+  else {
+
+    foreach my $subscriber (@to_email){
+      my $msg_mail = MIME::Lite->new(
+        From    => $from_email,
+        To      => $subscriber,
+        Subject => "eksi$list $filename",
+        Type    => 'multipart/mixed',
+      );
+      $msg_mail->attach(
+        Type     => 'application/html',
+        Path     => "$filepath",
+        Filename => "$filename.html",
+      );
+      $msg_mail->send;
+    }
+
   }
 }
