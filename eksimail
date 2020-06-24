@@ -42,6 +42,11 @@ This will install dependencies into local/
 
     carton exec ./eksimail --list=daily --from=you@a.com --to=one@b.com --to=two@c.com
 
+or
+
+    perl -I./local/lib/perl5 ./eksimail --list=daily --from=you@a.com --to=one@b.com --to=two@c.com
+
+
 =over
 
 =item

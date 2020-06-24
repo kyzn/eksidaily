@@ -23,6 +23,10 @@ This will install dependencies into local/
 
     carton exec ./eksimail --list=daily --from=you@a.com --to=one@b.com --to=two@c.com
 
+or
+
+    perl -I./local/lib/perl5 ./eksimail --list=daily --from=you@a.com --to=one@b.com --to=two@c.com
+
 - Add `--from` and `--to` addresses with command line arguments. You can add more than one receivers.
 - If you don't add a `--from` an email won't be sent.
 - If you want to send via SendGrid Web API, provide `--sendgrid-api-key`. Otherwise `sendmail` will be used.
