@@ -162,9 +162,9 @@ write_text($filepath,$out);
 if($from_email){
   if ($sendgrid_api_key){
 
-    my $sg = Email::SendGrid::V3->new(api_key => $sendgrid_api_key);
     foreach my $subscriber (@to_email){
-      $sg->from($from_email)
+      Email::SendGrid::V3->new(api_key => $sendgrid_api_key)
+        ->from($from_email)
         ->subject("eksi$list $filename")
         ->add_content('text/html', $out)
         ->add_envelope( to => [ $subscriber ] )
